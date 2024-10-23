@@ -2,7 +2,7 @@
 
 [x] -> Settingup Environment
 [x] -> Add to github
-[] -> Add auth
+[x] -> Add auth
 [] -> Configure database
 [] -> Add Navbar
 [] -> functionable ui
