@@ -11,6 +11,10 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        customColor: '#efc0b2',
+        customColor2: '#efc0b2',
+        customfontColor: '#9b4831',
+        customfontColor2: '#7e3c2e',
       },
     },
   },

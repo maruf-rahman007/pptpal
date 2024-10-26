@@ -30,7 +30,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/1.png" type="image/x-icon" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="bg-customColor2"
       >
         <Providers>
           {children}
