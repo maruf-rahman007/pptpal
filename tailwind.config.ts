@@ -17,7 +17,8 @@ const config: Config = {
   			customColor: '#efc0b2',
   			customColor2: '#efc0b2',
   			customfontColor: '#9b4831',
-  			customfontColor2: '#7e3c2e'
+  			customfontColor2: '#7e3c2e',
+  			footerbg: '#e49b85',
   		},
   		animation: {
   			scroll: 'scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite'
