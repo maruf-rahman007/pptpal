@@ -1,5 +1,7 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
+import { signIn } from 'next-auth/react';
+import prisma from './prisma';
 
 export const NEXT_AUTH = {
     providers: [
@@ -37,6 +39,38 @@ export const NEXT_AUTH = {
         },
         async jwt({ token, user, session }: any) {
             return token
+        },
+        async signIn({ user, account, profile, email, credentials }:any) {
+          console.log("User ",user);
+          console.log("Account ",account);
+          console.log("Profile ",profile);
+          console.log("Email ",email);
+          console.log("Credentials ",credentials);
+
+          const isUserExist = await prisma.user.findFirst({
+            where: {
+              email:user.email,
+            }
+          })
+          if (isUserExist) {
+            return true;
+          } else {
+            try {
+              const newUser = await prisma.user.create({
+                data: {
+                  name:user.name,
+                  email:user.email,
+                  image:user.image
+                }
+              })
+              return true;
+            } catch (error) {
+              throw new Error("Something Wrong With Data Base")
+            }
+          }
         }
+    },
+    pages: {
+      signIn: ["/usersignin","roomsignin"]
     }
 }

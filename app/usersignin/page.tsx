@@ -9,11 +9,24 @@ import {
   IconBrandOnlyfans,
 } from "@tabler/icons-react";
 import { div } from "framer-motion/client";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignupFormDemo() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");
+    const resp = await signIn("google",{
+      redirect: false,
+      callbackUrl: "/dashboard"
+    });
+    console.log(resp);
+    if(resp?.error) {
+      alert("SignIn Error");
+    } else {
+      router.push('/dashboard');
+    }
   };
   return (
     <div className="flex flex-col items-center mt-40">

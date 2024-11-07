@@ -161,6 +161,7 @@ export const SidebarLink = ({
   ...props
 }: {
   link: Links;
+  onClick?: () => void;
   className?: string;
   props?: LinkProps;
 }) => {
