@@ -2,8 +2,24 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-
+import { useState } from "react";
+import axios from "axios"
 const DialogDemo = () => {
+  const [roomname,setroomname] = useState("");
+  const [roompassword,setroompassword] = useState("");
+  const onclickHandler = async ()=> {
+    console.log("New Room ");
+    console.log("Here is room name:",roomname);
+    console.log("Here is room passwrord:",roompassword);
+    const res = await axios.post('/api/room',{
+      roomname,
+      roompassword
+    })
+
+    console.log("Response ",res);
+
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -22,24 +38,30 @@ const DialogDemo = () => {
               Room Name
             </Label>
             <Input
+              onChange={(e)=>{
+                setroomname(e.target.value)
+              }}
               id="roomName"
               className="w-full py-3 text-lg"
               placeholder="Enter room name"
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="roomDescription" className="text-left">
-              Room Description
+            <Label htmlFor="roompassword" className="text-left">
+              Room Password
             </Label>
             <Input
+            onChange={(e)=>{
+              setroompassword(e.target.value)
+            }}
               id="roomDescription"
               className="w-full py-3 text-lg"
-              placeholder="Enter room description"
+              placeholder="******"
             />
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button onClick={onclickHandler} type="submit">Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
