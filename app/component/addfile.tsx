@@ -2,7 +2,7 @@
 
 import { UploadButton } from "./../lib/uploadthing";
 
-export default function CreateRoom() {
+export default function UploadButtonComp() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <UploadButton

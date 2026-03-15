@@ -6,6 +6,7 @@ import {
   GlowingStarsDescription,
   GlowingStarsTitle,
 } from "../../../../components/ui/glowing-stars";
+import { useRouter } from "next/navigation";
 
 interface Room {
   id: number | string
@@ -19,10 +20,15 @@ interface RoomCardProps {
 
 
 export function RoomCard({ room }: RoomCardProps) {
+
+  const router = useRouter()
+
+  const handleClick = () => {
+    router.push(`/dashboard/${room.id}`)
+  }
+
   return (
-    <div className="flex py-10 items-center justify-center antialiased cursor-pointer" onClick={()=>{
-        console.log("Hi from room ",room.name);
-    }}> 
+    <div className="flex py-10 items-center justify-center antialiased cursor-pointer" onClick={handleClick}> 
       <GlowingStarsBackgroundCard>
         <GlowingStarsTitle className="mb-1">{room.name}</GlowingStarsTitle> 
         <div className="flex justify-between items-end">
