@@ -8,14 +8,15 @@ import {
 } from "../../../../components/ui/glowing-stars";
 
 interface Room {
-  id: number;
-  name: string;
-  description: string; // Ensure description is included
+  id: number | string
+  name: string
+  description: string
 }
 
 interface RoomCardProps {
-  room: Room; // Define the room prop
+  room: Room
 }
+
 
 export function RoomCard({ room }: RoomCardProps) {
   return (

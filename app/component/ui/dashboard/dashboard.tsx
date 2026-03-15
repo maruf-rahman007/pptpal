@@ -1,63 +1,75 @@
-"use client";
-
-import React, { useState } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "../../../../components/ui/sidebar";
+"use client"
+import React, { useState } from "react"
+import axios from "axios"
+import { Sidebar, SidebarBody, SidebarLink } from "../../../../components/ui/sidebar"
 import {
   IconArrowLeft,
   IconBrandTabler,
   IconSettings,
   IconUserBolt,
-} from "@tabler/icons-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { RoomCard } from "./roomcard";
-import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import DialogDemo from "./dialogdemo";
+} from "@tabler/icons-react"
+import Link from "next/link"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { RoomCard } from "./roomcard"
+import { signOut, useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import DialogDemo from "./dialogdemo"
 
-export function SidebarDemo() {
-  const router = useRouter();
-  const session = useSession();
-  console.log("Session :", session);
-  if (session.status === 'unauthenticated') {
-    router.push('/usersignin')
+interface Room {
+  id: string
+  roomname: string
+  allowedaccess: string[]
+}
+
+interface SidebarDemoProps {
+  initialRooms: Room[]
+}
+
+export function SidebarDemo({ initialRooms }: SidebarDemoProps) {
+  const [rooms, setRooms] = useState<Room[]>(initialRooms)
+  const [refreshing, setRefreshing] = useState(false)
+  const router = useRouter()
+  const { data: session } = useSession()
+
+  const refreshRooms = async () => {
+    setRefreshing(true)
+    try {
+      console.log("Sending get request");
+      const { data } = await axios.get('/api/room', {
+        withCredentials: true,
+        timeout: 5000,
+      })
+      setRooms(data.rooms)
+    } catch (error) {
+      console.error('Failed to refresh rooms:', error)
+    } finally {
+      setRefreshing(false)
+    }
   }
-  const links = [
-    {
-      label: "Dashboard",
-      href: "#",
-      icon: <IconBrandTabler className="text-neutral-900 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Profile",
-      href: "#",
-      icon: <IconUserBolt className="text-neutral-900 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Settings",
-      href: "#",
-      icon: <IconSettings className="text-neutral-900 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: <IconArrowLeft className="text-neutral-900 h-5 w-5 flex-shrink-0" />,
-      onClick: () => signOut(),
-    },
-  ];
 
-  const [open, setOpen] = useState(false);
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/usersignin' })
+  }
+
+  const links = [
+    { label: "Dashboard", href: "#", icon: <IconBrandTabler className="text-neutral-900 h-5 w-5 flex-shrink-0" /> },
+    { label: "Profile", href: "#", icon: <IconUserBolt className="text-neutral-900 h-5 w-5 flex-shrink-0" /> },
+    { label: "Settings", href: "#", icon: <IconSettings className="text-neutral-900 h-5 w-5 flex-shrink-0" /> },
+    { 
+      label: "Logout", 
+      href: "#", 
+      icon: <IconArrowLeft className="text-neutral-900 h-5 w-5 flex-shrink-0" />,
+      onClick: handleSignOut,
+    },
+  ]
+
+  const [open, setOpen] = useState(false)
 
   return (
-    <div
-      className={cn(
-        "rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 bor dark:border-neutral-900 overflow-hidden",
-        "h-screen"
-      )}
-    >
+    <div className={cn("rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 h-screen")}>
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -75,11 +87,11 @@ export function SidebarDemo() {
           <div>
             <SidebarLink
               link={{
-                label: session.data?.user?.name || "Murshid",
+                label: session?.user?.name || "User",
                 href: "#",
                 icon: (
                   <Image
-                    src={session.data?.user?.image || "https://assets.aceternity.com/manu.png"}
+                    src={session?.user?.image || "/default-avatar.png"}
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}
@@ -91,9 +103,16 @@ export function SidebarDemo() {
           </div>
         </SidebarBody>
       </Sidebar>
-      <Dashboard />
+      
+      <Dashboard 
+        rooms={rooms} 
+        refreshRooms={refreshRooms}
+        refreshing={refreshing}
+        session={session}
+        onSignOut={handleSignOut}
+      />
     </div>
-  );
+  )
 }
 
 export const Logo = () => (
@@ -110,7 +129,7 @@ export const Logo = () => (
       Rooms
     </motion.span>
   </Link>
-);
+)
 
 export const LogoIcon = () => (
   <Link
@@ -119,33 +138,50 @@ export const LogoIcon = () => (
   >
     <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
   </Link>
-);
+)
 
-// Dummy dashboard component with content
-const Dashboard = () => {
-  const [rooms, setRooms] = useState([
-    { id: 1, name: 'Room 1', description: 'Description for Room 1' },
-    { id: 2, name: 'Room 2', description: 'Description for Room 2' },
-    { id: 3, name: 'Room 3', description: 'Description for Room 3' },
-    { id: 4, name: 'Room 4', description: 'Description for Room 4' },
-    { id: 5, name: 'Room 5', description: 'Description for Room 5' },
-    { id: 6, name: 'Room 6', description: 'Description for Room 6' },
-    { id: 7, name: 'Room 7', description: 'Description for Room 7' },
-  ]);
+interface DashboardProps {
+  rooms: Room[]
+  refreshRooms: () => void
+  refreshing: boolean
+  session: any
+  onSignOut: () => void
+}
+
+const Dashboard: React.FC<DashboardProps> = ({
+  rooms,
+  refreshRooms,
+  refreshing,
+  session,
+  onSignOut,
+}) => {
   return (
     <div className="bg-customColor w-full h-full border">
+      
       <div className="flex flex-col items-end mt-10 mr-10 p-4">
-        <DialogDemo/>
+        <DialogDemo onRoomCreated={refreshRooms} />
+      </div>
+      <div className="pl-8 ml-6">
+          <h1 className="text-4xl font-bold text-gray-900">
+            Welcome, {session?.user?.name || 'User'}!
+          </h1>
       </div>
       <div className="p-4 max-h-[calc(100vh-150px)] overflow-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {rooms.map((room) => (
-            <RoomCard key={room.id} room={room} />
-          ))}
+          {rooms.length > 0 ? (
+            rooms.map((room) => (
+              <RoomCard 
+                key={room.id} 
+                room={{ ...room, name: room.roomname, description: room.roomname }} 
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              No rooms yet. Create your first room!
+            </div>
+          )}
         </div>
       </div>
     </div>
-  );
-};
-
-export default SidebarDemo;
+  )
+}

@@ -4,30 +4,46 @@ import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  IconBrandGithub,
   IconBrandGoogle,
-  IconBrandOnlyfans,
 } from "@tabler/icons-react";
-import { div } from "framer-motion/client";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function SignupFormDemo() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Auto-redirect if already authenticated
+  React.useEffect(() => {
+    if (status === 'authenticated') {
+      console.log('✅ Already signed in, redirecting...');
+      router.push('/dashboard');
+      router.refresh();
+    }
+  }, [status, router]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted");
-    const resp = await signIn("google",{
-      redirect: false,
+    console.log("🚀 Google SignIn triggered");
+    
+    // ✅ Remove redirect: false - let NextAuth auto-redirect
+    const resp = await signIn("google", {
       callbackUrl: "/dashboard"
     });
-    console.log(resp);
-    if(resp?.error) {
-      alert("SignIn Error");
-    } else {
-      router.push('/dashboard');
-    }
+    
+    console.log("SignIn response:", resp);
   };
+
+  if (status === 'loading') {
+    return (
+      <div className="flex flex-col items-center mt-40">
+        <div className="max-w-md w-full rounded-none md:rounded-2xl p-4 md:p-8 shadow-input dark:bg-black">
+          <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center mt-40">
       <div className="max-w-md w-full rounded-none md:rounded-2xl p-4 md:p-8 shadow-input dark:bg-black">
@@ -42,7 +58,7 @@ export default function SignupFormDemo() {
           <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
           <div className="flex flex-col space-y-4">
             <button
-              className=" relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+              className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
               type="submit"
             >
               <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
@@ -53,8 +69,11 @@ export default function SignupFormDemo() {
             </button>
           </div>
         </form>
+        
         <div className="flex flex-col items-center">
-          <h4>For Room Login <a className="font-semibold underline" href="/roomsignin">Click Here </a></h4>
+          <h4>
+            For Room Login <a className="font-semibold underline" href="/roomsignin">Click Here</a>
+          </h4>
         </div>
       </div>
     </div>
@@ -69,4 +88,3 @@ const BottomGradient = () => {
     </>
   );
 };
-

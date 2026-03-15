@@ -1,76 +1,75 @@
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from "next-auth/providers/google";
-import { signIn } from 'next-auth/react';
-import prisma from './prisma';
+import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
+import type { NextAuthOptions } from 'next-auth'
+import prisma from './prisma'
 
-export const NEXT_AUTH = {
-    providers: [
-        CredentialsProvider({
-            name: "Credentials",
-            credentials: {
-                username: { label: "Username", type: "text", placeholder: "jsmith" },
-                password: { label: "Password", type: "password" }
-              },
-              async authorize(credentials, req) {
-                console.log("Resp :",credentials);
-                // Add logic here to look up the user from the credentials supplied
-                const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
-          
-                if (user) {
-                  // Any object returned will be saved in `user` property of the JWT
-                  return user
-                } else {
-                  // If you return null then an error will be displayed advising the user to check their details.
-                  return null
-          
-                  // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
-                }
-              }
-        }),
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID || "",
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
-          })
-    ],
-    secret:process.env.NEXTAUTH_SECRET,
-    callbacks: {
-        async session({ session, user, token }: any) {
-            return session
-        },
-        async jwt({ token, user, session }: any) {
-            return token
-        },
-        async signIn({ user, account, profile, email, credentials }:any) {
-          console.log("User ",user);
-          console.log("Account ",account);
-          console.log("Profile ",profile);
-          console.log("Email ",email);
-          console.log("Credentials ",credentials);
-
-          const isUserExist = await prisma.user.findFirst({
-            where: {
-              email:user.email,
-            }
-          })
-          if (isUserExist) {
-            return true;
-          } else {
-            try {
-              const newUser = await prisma.user.create({
-                data: {
-                  name:user.name,
-                  email:user.email,
-                  image:user.image
-                }
-              })
-              return true;
-            } catch (error) {
-              throw new Error("Something Wrong With Data Base")
-            }
-          }
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
+        return user
+      }
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!
+    })
+  ],
+  secret: process.env.NEXTAUTH_SECRET!,
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (account && user) {
+        return {
+          ...token,
+          id: user.id,
+          accessToken: account.access_token
         }
+      }
+      return token
     },
-    pages: {
-      signIn: ["/usersignin","roomsignin"]
+    async session({ session, token }) {
+      if (token?.id) {
+        session.user.id = token.id
+      }
+      return session
+    },
+    async signIn({ user }) {
+      console.log("🔍 Google SignIn:", user.id, user.email)
+      
+      try {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! }
+        })
+        
+        if (!existingUser) {
+          const newUser = await prisma.user.create({
+            data: {
+              id: user.id,        // ✅ Google ID: 117782288976783273874
+              email: user.email!,
+              name: user.name!,
+              image: user.image!,
+            }
+          })
+          console.log("✅ CREATED USER:", newUser.id)
+        } else {
+          console.log("✅ USER EXISTS:", existingUser.id)
+        }
+        return true
+      } catch (error) {
+        console.error("🚨 SignIn ERROR:", error)
+        return false
+      }
     }
+  },
+  pages: {
+    signIn: "/usersignin"
+  }
 }
+
+export default authOptions
