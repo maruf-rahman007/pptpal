@@ -93,7 +93,7 @@ const DialogDemo = ({ onRoomCreated }: DialogDemoProps) => {
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onClickHandler} disabled={loading}>
+          <Button path="submit" onClick={onClickHandler} disabled={loading}>
             {loading ? "Creating..." : "Create Room"}
           </Button>
         </DialogFooter>

@@ -11,7 +11,7 @@ import {
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { cn } from "@/lib/utils"
+import { cn } from "@/app/lib/utils"
 import { Button } from "@/components/ui/button"
 import { RoomCard } from "./roomcard"
 import { signOut, useSession } from "next-auth/react"
