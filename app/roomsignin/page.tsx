@@ -3,14 +3,27 @@ import React from "react";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  IconBrandGithub,
-  IconBrandGoogle,
-  IconBrandOnlyfans,
-} from "@tabler/icons-react";
-import { div } from "framer-motion/client";
+import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+
+
+
+
 
 export default function SignupFormDemo() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const role = session?.user?.role || "guest";
+    React.useEffect(() => {
+      if (status === 'authenticated') {
+        if (role === 'user') {
+          router.push('/dashboard');
+        } else {
+          
+        }
+      }
+    }, [status, router]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");

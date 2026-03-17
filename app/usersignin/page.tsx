@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,13 @@ import { useRouter } from "next/navigation";
 
 export default function SignupFormDemo() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status} = useSession();
+
+  // useEffect(() => {
+  //     if (role === 'unauthenticated') {
+  //       signIn(undefined, { callbackUrl: '/usersignin' })
+  //     }
+  //   }, [status])
 
   // Auto-redirect if already authenticated
   React.useEffect(() => {

@@ -25,10 +25,22 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account }) {
       if (account && user) {
+
+        let role = "guest"
+
+        if (account.provider === "google") {
+          role = "user"
+        }
+
+        if (account.provider === "credentials") {
+          role = "guest"
+        }
+
         return {
           ...token,
           id: user.id,
-          accessToken: account.access_token
+          accessToken: account.access_token,
+          role,
         }
       }
       return token
@@ -37,16 +49,19 @@ export const authOptions: NextAuthOptions = {
       if (token?.id) {
         session.user.id = token.id
       }
+      if (token?.role) {
+        session.user.role = token.role as string
+      }
       return session
     },
     async signIn({ user }) {
       console.log("🔍 Google SignIn:", user.id, user.email)
-      
+
       try {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email! }
         })
-        
+
         if (!existingUser) {
           const newUser = await prisma.user.create({
             data: {

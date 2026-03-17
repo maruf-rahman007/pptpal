@@ -1,5 +1,5 @@
 'use client'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession, signOut, signIn } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { SidebarDemo } from '../component/ui/dashboard/dashboard'
@@ -9,7 +9,14 @@ export default function DashboardPage() {
   const [rooms, setRooms] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // ✅ FETCH ROOMS WHEN SESSION CHANGES
+    // Redirect if unauthenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      signIn(undefined, { callbackUrl: '/usersignin' })
+    }
+  }, [status])
+
+  // fetching rooms after authentication
   useEffect(() => {
     const fetchRooms = async () => {
       if (status === 'authenticated' && session?.user?.id) {
@@ -34,6 +41,7 @@ export default function DashboardPage() {
 
   // Show loading while session or rooms are loading
   if (status === 'loading' || loading) {
+    console.log({ status, loading });
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-xl">Loading dashboard...</div>
@@ -41,14 +49,6 @@ export default function DashboardPage() {
     )
   }
 
-  // Show signin if unauthenticated
-  if (status === 'unauthenticated' || !session?.user?.id) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-xl">Redirecting to signin...</div>
-      </div>
-    )
-  }
 
   return (
     <div className="h-screen min-h-screen bg-gray-50">
