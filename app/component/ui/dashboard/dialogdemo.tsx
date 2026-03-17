@@ -14,6 +14,7 @@ interface DialogDemoProps {
 const DialogDemo = ({ onRoomCreated }: DialogDemoProps) => {
   const [roomname, setRoomname] = useState("")
   const [roompassword, setRoompassword] = useState("")
+  const [roomtitle, setRoomtitle] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -32,7 +33,8 @@ const DialogDemo = ({ onRoomCreated }: DialogDemoProps) => {
       // console.log("All sent datas are,", roomname, roompassword);
       const { data } = await axios.post('/api/room', {
         roomname: roomname.trim(),
-        roompassword: roompassword.trim()
+        roompassword: roompassword.trim(),
+        roomtitle: roomtitle.trim()
       }, {
         withCredentials: true,
         timeout: 5000,
@@ -70,6 +72,17 @@ const DialogDemo = ({ onRoomCreated }: DialogDemoProps) => {
               {error}
             </div>
           )}
+          <div className="grid gap-2">
+            <Label htmlFor="roomTitle">Room Title</Label>
+            <Input
+              id="roomTitle"
+              type="text"
+              value={roomtitle}
+              onChange={(e) => setRoomtitle(e.target.value)}
+              className="w-full py-3 text-lg"
+              placeholder="Enter room title"
+            />
+          </div>
           <div className="grid gap-2">
             <Label htmlFor="roomName">Room Name</Label>
             <Input

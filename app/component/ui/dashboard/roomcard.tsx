@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 interface Room {
   id: number | string
   name: string
-  description: string
+  title: string
 }
 
 interface RoomCardProps {
@@ -22,7 +22,7 @@ interface RoomCardProps {
 export function RoomCard({ room }: RoomCardProps) {
 
   const router = useRouter()
-
+  console.log(room.title);
   const handleClick = () => {
     router.push(`/dashboard/${room.id}`)
   }
@@ -33,7 +33,7 @@ export function RoomCard({ room }: RoomCardProps) {
         <GlowingStarsTitle className="mb-1">{room.name}</GlowingStarsTitle> 
         <div className="flex justify-between items-end">
           <GlowingStarsDescription className="mb-0"> 
-            {room.description}
+            {room.title}
           </GlowingStarsDescription>
           <div className="h-8 w-8 rounded-full bg-[hsla(0,0%,100%,.1)] flex items-center justify-center">
             <Icon />

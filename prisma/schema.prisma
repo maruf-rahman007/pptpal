@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id        // ✅ NO @default(cuid()) - Google ID
+  id        String   @id
   email     String   @unique
   name      String?
   image     String?
@@ -21,6 +21,7 @@ model Rooms {
   id            String    @id @default(cuid())
   roomname      String    @unique
   password      String
+  title         String
   allowedaccess String[]
   userId        String
   createdAt     DateTime  @default(now())

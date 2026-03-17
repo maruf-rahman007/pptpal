@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation"
 import DialogDemo from "./dialogdemo"
 
 interface Room {
+  title: string,
   id: string
   roomname: string
   allowedaccess: string[]
@@ -172,7 +173,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             rooms.map((room) => (
               <RoomCard 
                 key={room.id} 
-                room={{ ...room, name: room.roomname, description: room.roomname }} 
+                room={{ ...room, name: room.roomname, title: room.title }} 
               />
             ))
           ) : (
