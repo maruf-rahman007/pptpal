@@ -5,10 +5,10 @@
 - [x] -> Add auth
 - [x] -> Configure database
 - [x] -> Add Navbar
-- [] -> functionable ui
-- [] -> Room creation
+- [x] -> functionable ui
+- [x] -> Room creation
 - [] -> Room Access
-- [] -> Backend APIs
+- [x] -> Backend APIs
 - [x] -> Add uploadthing for file upload
 - [] -> Testing
 - [x] -> Deploment

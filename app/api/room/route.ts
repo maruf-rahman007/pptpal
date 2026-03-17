@@ -16,9 +16,7 @@ function shortRandom6() {
   return result;
 }
 
-export async function generateUniqueRoomname(base: string) {
-
-
+async function generateUniqueRoomname(base: string) {
   const clean = base.toString().trim().slice(0, 100) || "room"
   let candidate = clean
   let attempt = 0
