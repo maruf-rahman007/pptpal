@@ -37,10 +37,12 @@ import {
   File,
   FileSpreadsheet,
   ArrowLeft,
+  LogOut
 } from "lucide-react"
 import { cn } from "@/app/lib/utils"
 import { useUploadThing } from "@/app/lib/uploadthing"
 import axios from "axios"
+import { useSession, signOut } from "next-auth/react";
 
 
 interface FileType {
@@ -98,9 +100,9 @@ export default function RoomPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const { startUpload, isUploading } = useUploadThing("fileUploader")
-
+  const { data: session } = useSession()
   const isOwner = role === "owner"
-
+  console.log(session?.user.role);
   const fetchRoom = useCallback(async () => {
     try {
       const res = await fetch(`/api/room/${roomId}`)
@@ -144,36 +146,36 @@ export default function RoomPage() {
     if (file) handleFileSelect(file)
   }
 
-const handleUpload = async () => {
-  if (!selectedFile) return
+  const handleUpload = async () => {
+    if (!selectedFile) return
 
-  try {
-    // 1. Upload to UploadThing
-    const res = await startUpload([selectedFile])
+    try {
+      // upload to UploadThing
+      const res = await startUpload([selectedFile])
 
-    if (!res || res.length === 0) {
-      setUploadError("Upload failed")
-      return
+      if (!res || res.length === 0) {
+        setUploadError("Upload failed")
+        return
+      }
+
+      const file = res[0]
+
+      // saving to db 
+      const response = await axios.post(`/api/room/${roomId}`, {
+        name: file.name,
+        url: file.ufsUrl,
+        key: file.key,
+      })
+
+      // update ui
+      setFiles((prev) => [...prev, response.data])
+      setSelectedFile(null)
+      setUploadDialogOpen(false)
+    } catch (err: any) {
+      console.error("Upload error:", err)
+      setUploadError(err?.response?.data?.error || "Upload failed")
     }
-
-    const file = res[0]
-
-    // 2. Send file data to your backend using axios
-    const response = await axios.post(`/api/room/${roomId}`, {
-      name: file.name,
-      url: file.ufsUrl, // ✅ use ufsUrl (NOT deprecated url)
-      key: file.key,
-    })
-
-    // 3. Update UI
-    setFiles((prev) => [...prev, response.data])
-    setSelectedFile(null)
-    setUploadDialogOpen(false)
-  } catch (err: any) {
-    console.error("Upload error:", err)
-    setUploadError(err?.response?.data?.error || "Upload failed")
   }
-}
 
   const handleDeleteFile = async (fileId: string) => {
     if (!isOwner) return
@@ -233,11 +235,27 @@ const handleUpload = async () => {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div
-                onClick={() => router.push('/dashboard')}
+                onClick={() => {
+                  if (session?.user?.role !== "guest") {
+                    router.back();
+                  } else {
+                    signOut({ callbackUrl: "/roomsignin" });
+                  }
+                }}
                 className="flex size-14 cursor-pointer items-center justify-center rounded-2xl bg-black text-sm font-semibold text-white shadow-lg hover:scale-105 transition"
               >
-                <ArrowLeft className="size-4" />
-                Back
+                {session?.user?.role !== "guest" ? (
+                  <>
+                    <ArrowLeft className="size-4" />
+                    Back
+                  </>
+                ) : (
+                  <>
+                    
+                    <LogOut className="size-4" />
+                    Logout
+                  </>
+                )}
               </div>
               <div>
                 <h1 className="text-balance text-2xl font-bold text-black sm:text-3xl">

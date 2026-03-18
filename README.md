@@ -7,7 +7,7 @@
 - [x] -> Add Navbar
 - [x] -> functionable ui
 - [x] -> Room creation
-- [] -> Room Access
+- [X] -> Room Access
 - [x] -> Backend APIs
 - [x] -> Add uploadthing for file upload
 - [] -> Testing

@@ -34,6 +34,10 @@ export function SidebarDemo({ initialRooms }: SidebarDemoProps) {
   const [refreshing, setRefreshing] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
+  console.log(session);
+  if (session?.user?.role==="guest") {
+    router.push(`/dashboard/${session.user.id}`);
+  }
 
   const refreshRooms = async () => {
     setRefreshing(true)

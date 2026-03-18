@@ -2,18 +2,32 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import type { NextAuthOptions } from 'next-auth'
 import prisma from './prisma'
+import { checkRoomAccess } from './roomAuth'
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" }
+        roomId: { label: "Room ID", type: "text" },
+        password: { label: "Password", type: "password" },
+        studentId: { label: "Student ID", type: "text" }
       },
       async authorize(credentials) {
-        const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
-        return user
+        if (!credentials) return null;
+
+        const { roomId, password, studentId } = credentials;
+
+        if (!roomId || !password) {
+            return null;
+        }
+
+        const room = await checkRoomAccess({ roomId, password, studentId });
+        if (!room) return null;
+
+        console.log("Return values:", room);
+
+        return { id: room.id, title: room.title, roomname: room.roomname };
       }
     }),
     GoogleProvider({
@@ -54,9 +68,11 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async signIn({ user }) {
-      console.log("🔍 Google SignIn:", user.id, user.email)
-
+    async signIn({ user, account }) {
+      console.log(user, account)
+      if (account?.provider === "credentials") {
+        return true
+      }
       try {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email! }
@@ -65,7 +81,7 @@ export const authOptions: NextAuthOptions = {
         if (!existingUser) {
           const newUser = await prisma.user.create({
             data: {
-              id: user.id,        // ✅ Google ID: 117782288976783273874
+              id: user.id,
               email: user.email!,
               name: user.name!,
               image: user.image!,

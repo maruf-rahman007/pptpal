@@ -4,36 +4,65 @@ import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { cn } from "@/app/lib/utils";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import Navbar from "../component/Navbar";
-
-
-
-
 
 export default function SignupFormDemo() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const role = session?.user?.role || "guest";
-  React.useEffect(() => {
-    if (status === 'authenticated') {
-      if (role === 'user') {
-        router.push('/dashboard');
-      } else {
+  const [error, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
-      }
-    }
-  }, [status, router]);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted");
+    setError("");
+    setLoading(true);
+
+    const roomId = (document.getElementById("roomId") as HTMLInputElement)?.value;
+    const password = (document.getElementById("password") as HTMLInputElement)?.value;
+    const studentId = (document.getElementById("studentId") as HTMLInputElement)?.value;
+
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        roomId,
+        password,
+        studentId,
+      });
+
+      console.log("res:", res);
+
+      if (res?.error) {
+        setError("Invalid Room ID or Password");
+        setLoading(false);
+        return;
+      }
+
+      // Wait for session cookie to be set
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const session = await getSession();
+      console.log("session:", session);
+
+      if (session?.user?.id) {
+        console.log(session);
+        router.push(`/dashboard/${session.user.id}`);
+      } else {
+        setError("Login failed. Please try again.");
+        setLoading(false);
+      }
+
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Something went wrong.");
+      setLoading(false);
+    }
   };
+
   return (
     <div>
       <Navbar />
       <div className="flex flex-col items-center mt-40">
-        <div className="max-w-md w-full rounded-none md:rounded-2xl p-4 md:p-8 shadow-input  dark:bg-black">
+        <div className="max-w-md w-full rounded-none md:rounded-2xl p-4 md:p-8 shadow-input dark:bg-black">
           <h2 className="font-bold text-2xl text-neutral-900">
             Welcome to PPTPAL
           </h2>
@@ -41,28 +70,36 @@ export default function SignupFormDemo() {
             Login to get access to your room and all your PPTS
           </p>
 
+          {error && (
+            <p className="text-red-500 text-sm mt-2">{error}</p>
+          )}
+
           <form className="my-8" onSubmit={handleSubmit}>
             <LabelInputContainer className="mb-4">
-              <Label htmlFor="email">Room ID</Label>
-              <Input id="email" placeholder="62_A" type="email" />
+              <Label>Room ID</Label>
+              <Input id="roomId" placeholder="62_A" type="text" />
             </LabelInputContainer>
             <LabelInputContainer className="mb-4">
-              <Label htmlFor="password">Password</Label>
+              <Label>Password</Label>
               <Input id="password" placeholder="••••••••" type="password" />
             </LabelInputContainer>
-
+            <LabelInputContainer className="mb-4">
+              <Label>Student Id</Label>
+              <Input id="studentId" placeholder="222-15-6212" type="text" />
+            </LabelInputContainer>
             <button
               className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
               type="submit"
+              disabled={loading}
             >
-              Sign up &rarr;
+              {loading ? "Signing in..." : "Sign in →"}
               <BottomGradient />
             </button>
 
             <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
           </form>
           <div className="flex flex-col items-center">
-            <h4>For User Login <a className="font-semibold underline" href="/usersignin">Click Here </a></h4>
+            <h4>For User Login <a className="font-semibold underline" href="/usersignin">Click Here</a></h4>
           </div>
         </div>
       </div>
